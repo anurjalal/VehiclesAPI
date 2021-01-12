@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -94,20 +93,19 @@ public class CarService {
      * @return the new/updated car is stored in the repository
      */
     public Car save(Car car) {
-        if (car.getId() != null) {
-            Optional<Car> savedCar = repository.findById(car.getId());
-            if (savedCar.isPresent()) {
-                Car updated = savedCar.get();
-                updated.setModifiedAt(LocalDateTime.now());
-                return repository.save(updated);
-            } else {
-                throw new CarNotFoundException(car.getId());
-            }
-        } else {
-            car.setCreatedAt(LocalDateTime.now());
+        car.setCreatedAt(LocalDateTime.now());
+        return repository.save(car);
+    }
+
+    public Car update(Car car) {
+        if (repository.findById(car.getId()).isPresent()) {
+            car.setModifiedAt(LocalDateTime.now());
             return repository.save(car);
+        } else {
+            throw new CarNotFoundException(car.getId());
         }
     }
+
 
     /**
      * Deletes a given car by ID

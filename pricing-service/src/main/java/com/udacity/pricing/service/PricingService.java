@@ -15,7 +15,7 @@ import java.util.stream.LongStream;
 public class PricingService {
 
     /**
-     * Holds {ID: Price} pairings (current implementation allows for 20 vehicles)
+     * Holds {ID: Price} pairings (current implementation allows for 19 vehicles)
      */
     private static final Map<Long, Price> PRICES = LongStream
             .range(1, 20)

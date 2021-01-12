@@ -20,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -123,7 +122,6 @@ public class CarControllerTest {
      * @throws Exception if the read operation for a single car fails
      */
     @Test
-    @Order(3)
     public void findCar() throws Exception {
         MvcResult mvcResult = mvc.perform(
                 get(new URI("/cars/1"))
@@ -156,12 +154,41 @@ public class CarControllerTest {
     }
 
     /**
+     * Tests for successful update of new car in the system
+     *
+     * @throws Exception when car update fails in the system
+     */
+    @Test
+    public void updateCar() throws Exception {
+        createCar();
+        Car car = updatedCar();
+        MvcResult mvcResult = mvc.perform(
+                put(new URI("/cars/1"))
+                        .content(json.write(car).getJson())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk()).andReturn();
+
+        String result = mvcResult.getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonResult = mapper.readTree(result);
+
+        String body = jsonResult.get("details").get("body").asText();
+        String engine = jsonResult.get("details").get("engine").asText();
+        String fuelType = jsonResult.get("details").get("fuelType").asText();
+
+        assertEquals(car.getDetails().getBody(), body);
+        assertEquals(car.getDetails().getEngine(), engine);
+        assertEquals(car.getDetails().getFuelType(), fuelType);
+
+    }
+
+    /**
      * Tests the deletion of a single car by ID.
      *
      * @throws Exception if the delete operation of a vehicle fails
      */
     @Test
-    @Order(4)
     public void deleteCar() throws Exception {
         mvc.perform(
                 delete(new URI("/cars/1"))
@@ -192,6 +219,16 @@ public class CarControllerTest {
         details.setNumberOfDoors(4);
         car.setDetails(details);
         car.setCondition(Condition.USED);
+        return car;
+    }
+
+    private Car updatedCar() {
+        Car car = getCar();
+        Details upated = car.getDetails();
+        upated.setBody("MVP");
+        upated.setEngine("4.2L V6");
+        upated.setFuelType("Electric");
+        car.setDetails(upated);
         return car;
     }
 }
